@@ -1,0 +1,20 @@
+menu "Component config: Microphone"
+	
+	# ********************* Device choice  *********************
+	choice
+	    prompt "Microphone type"
+	    default MIC_SPH0645LM4H
+		help
+			Select which microphone should be used.
+	config MIC_SPH0645LM4H
+	    bool "SPH0645LM4H"
+	    
+	config MIC_ATSAMD21
+	    bool "ATSAMD21"
+	
+	config MIC_SPW2430
+	    bool "SPW2430"
+	
+	endchoice
+
+endmenu
