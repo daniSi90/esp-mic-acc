@@ -1,1 +1,13 @@
 build
+scripts/CMakeCache.txt
+scripts/CMakeFiles
+scripts/Makefile
+scripts/CMakeOutput.log
+scripts/cmake_install.cmake
+scripts/*.cmake
+scripts/*.
+
+.vscode/c_cpp_properties.json
+.vscode/settings.json
+.clangd
+*.tcl

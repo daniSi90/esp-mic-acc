@@ -1,19 +1,28 @@
 {
   "C_Cpp.intelliSenseEngine": "default",
-  "idf.espIdfPath": "/home/dani/libs/esp/v5.4.1/esp-idf",
+  "idf.espIdfPath": "/home/stefan/esp/v5.4.1/esp-idf",
   "idf.pythonInstallPath": "/usr/bin/python3",
   "idf.openOcdConfigs": [
-    "board/esp32c3-builtin.cfg"
+    "interface/ftdi/esp32_devkitj_v1.cfg",
+    "target/esp32s3.cfg"
   ],
-  "idf.port": "/dev/ttyS0",
-  "idf.toolsPath": "/home/dani/libs/esp/.espressif",
+  "idf.port": "/dev/ttyUSB0",
+  "idf.toolsPath": "/home/stefan/.espressif",
   "idf.customExtraVars": {
-    "IDF_TARGET": "esp32c3"
+    "OPENOCD_SCRIPTS": "C:\\Espressif\\tools\\openocd-esp32\\v0.11.0-esp32-20220706/openocd-esp32/share/openocd/scripts",
+    "IDF_CCACHE_ENABLE": "1",
+    "IDF_TARGET": "esp32s3"
   },
-  "clangd.path": "/home/dani/libs/esp/.espressif/tools/esp-clang/esp-18.1.2_20240912/esp-clang/bin/clangd",
+  "clangd.path": "/home/stefan/.espressif/tools/esp-clang/esp-18.1.2_20240912/esp-clang/bin/clangd",
   "clangd.arguments": [
     "--background-index",
-    "--query-driver=/home/dani/libs/esp/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/xtensa-esp32-elf-gcc",
-    "--compile-commands-dir=${workspaceFolder}/build"
-  ]
+    "--query-driver=/home/stefan/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/xtensa-esp32s3-elf-gcc",
+    "--compile-commands-dir=/home/stefan/Documents/esp-mic-acc/build"
+  ],
+  "files.associations": {
+    "*.c": "c",
+    "task.h": "c",
+    "udp_handler.h": "c"
+  },
+  "idf.flashType": "UART"
 }
