@@ -5,10 +5,10 @@
 #include "sdkconfig.h"
 #include <inttypes.h>
 #include <stdio.h>
+#include "peripheral.h"
 #include "esp_microphone.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_NONE
-
 #include "esp_log.h"
 
 static const char *TAG = "main";
@@ -16,6 +16,8 @@ static const char *TAG = "main";
 void app_main(void)
 {
   ESP_LOGI(TAG, "Starting application...");
+
+  peripheral_init();
 
   while (1)
   {

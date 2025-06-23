@@ -561,8 +561,8 @@ CONFIG_PARTITION_TABLE_MD5=y
 #
 # Component config: Microphone
 #
-CONFIG_MIC_SPH0645LM4H=y
-# CONFIG_MIC_ATSAMD21 is not set
+# CONFIG_MIC_SPH0645LM4H is not set
+CONFIG_MIC_ATSAMD21=y
 # CONFIG_MIC_SPW2430 is not set
 # end of Component config: Microphone
 

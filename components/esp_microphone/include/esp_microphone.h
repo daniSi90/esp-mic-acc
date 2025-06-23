@@ -14,13 +14,20 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include <stdint.h>
+#include "sdkconfig.h"
+
+#if CONFIG_MIC_SPH0645LM4H
+#include "driver/i2s_std.h"
+#elif CONFIG_MIC_ATSAMD21
+#include "driver/i2s_pdm.h"
+#endif
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-    void ewsp_mic_init(void);
+    void esp_mic_init(void);
 
 #ifdef __cplusplus
 }

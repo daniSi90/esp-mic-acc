@@ -21,7 +21,8 @@ static const char *TAG = "esp-mic";
  * 3. https://www.adafruit.com/product/2716
  */
 
-void ewsp_mic_init(void) {
+void esp_mic_init(void)
+{
   // Initialize the microphone hardware
-  printf("Microphone initialized.\n");
+  ESP_LOGI(TAG, "Initializing microphone");
 }
