@@ -12,20 +12,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include <stddef.h>
-#include "sdkconfig.h"
 #include "peripheral.h"
-#if CONFIG_MIC_SPH0645LM4H
-#include "driver/i2s_std.h"
-#elif CONFIG_MIC_ATSAMD21
-#include "driver/i2s_pdm.h"
-#endif
 
 static i2s_chan_handle_t rx_handle;
-#if 0
-/// TODO: Transfer to mic component
-// static int16_t i2s_readraw_buff[SAMPLE_SIZE];
-// size_t bytes_read;
-#endif
 
 static void peripheral_i2s_init(void);
 
@@ -34,6 +23,11 @@ uint8_t peripheral_init(void)
     peripheral_i2s_init();
 
     return 0; // Return 0 on success
+}
+
+i2s_chan_handle_t *peripheral_get_i2s_rx_handle(void)
+{
+    return &rx_handle;
 }
 
 static void peripheral_i2s_init(void)
@@ -57,33 +51,5 @@ static void peripheral_i2s_init(void)
     };
     ESP_ERROR_CHECK(i2s_channel_init_pdm_rx_mode(rx_handle, &pdm_rx_cfg));
     ESP_ERROR_CHECK(i2s_channel_enable(rx_handle));
-
-#if 0
-/// TODO: Transfer to mic component
-    if (i2s_channel_read(rx_handle, (char *)i2s_readraw_buff, SAMPLE_SIZE, &bytes_read, 1000) == ESP_OK)
-    {
-        for (size_t ind = 0; ind < 20; ind++)
-        {
-            printf("%" PRId16 "\n", i2s_readraw_buff[ind]);
-        }
-        printf("\n");
-    }
-    else
-    {
-        printf("Read Failed!\n");
-    }
-    if (i2s_channel_read(rx_handle, (char *)i2s_readraw_buff, SAMPLE_SIZE, &bytes_read, 1000) == ESP_OK)
-    {
-        for (size_t ind = 0; ind < 200; ind++)
-        {
-            printf("%" PRId16 "\n", i2s_readraw_buff[ind]);
-        }
-        printf("\n");
-    }
-    else
-    {
-        printf("Read Failed!\n");
-    }
-#endif
 #endif
 }

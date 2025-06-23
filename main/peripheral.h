@@ -14,7 +14,13 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include <stdint.h>
+#include "sdkconfig.h"
 #include "config_gpios.h"
+#if CONFIG_MIC_SPH0645LM4H
+#include "driver/i2s_std.h"
+#elif CONFIG_MIC_ATSAMD21
+#include "driver/i2s_pdm.h"
+#endif
 
 #define CONFIG_I2S_SAMPLE_RATE_HZ 44100
 #define CONFIG_I2S_BIT_SAMPLE 16
@@ -29,6 +35,7 @@ extern "C"
 #endif
 
     uint8_t peripheral_init(void);
+    i2s_chan_handle_t *peripheral_get_i2s_rx_handle(void);
 
 #ifdef __cplusplus
 }
