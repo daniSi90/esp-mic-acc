@@ -12,8 +12,9 @@
  ********************************************************************************
  */
 
-#include "esp_microphone.h"
+#include <string.h>
 #include <stdio.h>
+#include "esp_microphone.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_NONE
 
@@ -36,12 +37,7 @@ esp_mic_create(void)
         ESP_LOGE(TAG, "Failed to allocate memory for microphone handle");
         return NULL;
     }
-
-    p_mic_handle->p_i2s_handle        = NULL; // Initialize to NULL
-    p_mic_handle->sample_size         = 0;    // Initialize to zero
-    p_mic_handle->sample_buffer       = NULL; // Initialize to NULL
-    p_mic_handle->sample_buffer_index = 1;    // Initialize to zero
-    p_mic_handle->task_handle         = NULL; // Initialize to NULL
+    memset(p_mic_handle, 0, sizeof(esp_mic_handle_t)); // Initialize the structure to zero
 
     return p_mic_handle;
 }
@@ -66,14 +62,24 @@ esp_mic_start(esp_mic_handle_t *p_mic_handle)
         ESP_LOGE(TAG, "Sample size is zero");
         return -1;
     }
-
-    p_mic_handle->sample_buffer = malloc(p_mic_handle->sample_size * sizeof(int16_t));
-    if (p_mic_handle->sample_buffer == NULL)
+    const size_t SAMPLE_BUFFER_SIZE = p_mic_handle->sample_size * sizeof(int16_t);
+    for (uint8_t i = 0; i < SAMPLE_BUFFER_NUM; i++)
     {
-        ESP_LOGE(TAG, "Failed to allocate sample buffer");
+        p_mic_handle->sample_buffer[i] = malloc(SAMPLE_BUFFER_SIZE);
+        if (p_mic_handle->sample_buffer[i] == NULL)
+        {
+            ESP_LOGE(TAG, "Failed to allocate sample buffer");
+            return -1;
+        }
+    }
+#if ESP_MIC_TRANSFER_DATA_OVER_STREAM_BUFFER
+    p_mic_handle->stream_buffer = xStreamBufferCreate(SAMPLE_BUFFER_SIZE, SAMPLE_BUFFER_SIZE);
+    if (p_mic_handle->stream_buffer == NULL)
+    {
+        ESP_LOGE(TAG, "Failed to create stream buffer");
         return -1;
     }
-
+#endif
     xTaskCreate(esp_mic_task, "mic", MIC_TASK_STACK_SIZE, p_mic_handle, tskIDLE_PRIORITY + 2, &p_mic_handle->task_handle);
     if (p_mic_handle->task_handle == NULL)
     {
@@ -92,18 +98,22 @@ esp_mic_task(void *arg)
     vTaskDelay(pdMS_TO_TICKS(1000)); // Wait for I2S to be ready
     while (1)
     {
-        if (i2s_channel_read(*p_mic_handle->p_i2s_handle, p_mic_handle->sample_buffer, p_mic_handle->sample_size, &p_mic_handle->bytes_read, MIC_READ_TIMEOUT_TICKS) == ESP_OK)
+        if (i2s_channel_read(*p_mic_handle->p_i2s_handle, p_mic_handle->sample_buffer[p_mic_handle->sample_buffer_index], p_mic_handle->sample_size, &p_mic_handle->bytes_read, MIC_READ_TIMEOUT_TICKS) == ESP_OK)
         {
             ESP_LOGI(TAG, "Read %zu bytes from microphone", p_mic_handle->bytes_read);
-
-#if 0
-            for (size_t i = 0; i < 100; i++)
+#if ESP_MIC_TRANSFER_DATA_OVER_STREAM_BUFFER
+            // clang-format off
+            xStreamBufferSend(p_mic_handle->stream_buffer, \
+                              p_mic_handle->sample_buffer[p_mic_handle->sample_buffer_index], \
+                              p_mic_handle->bytes_read, \
+                              portMAX_DELAY);
+            // clang-format on
+#elif ESP_MIC_TRANSFER_DATA_OVER_DOUBLE_BUFFER
+            if (++p_mic_handle->sample_buffer_index >= SAMPLE_BUFFER_NUM)
             {
-                printf("%d, ", p_mic_handle->sample_buffer[i]);
+                p_mic_handle->sample_buffer_index = 0; // Reset the index if it exceeds the number of buffers
             }
-            printf("\n\n\n");
 #endif
         }
-        vTaskDelay(pdMS_TO_TICKS(1000)); // Simulate some work
     }
 }

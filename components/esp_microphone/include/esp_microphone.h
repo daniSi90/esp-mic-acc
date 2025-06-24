@@ -24,18 +24,32 @@
 #include "driver/i2s_pdm.h"
 #endif
 
+#define ESP_MIC_TRANSFER_DATA_OVER_STREAM_BUFFER 0 // Use stream buffer for transferring data
+#define ESP_MIC_TRANSFER_DATA_OVER_DOUBLE_BUFFER 1 // Use stream buffer for transferring data
+
+#if ESP_MIC_TRANSFER_DATA_OVER_STREAM_BUFFER
+#define SAMPLE_BUFFER_NUM 1 // Only a single sample buffer is needed when using stream buffer - data is copied directly to the stream buffer
+#else
+#define SAMPLE_BUFFER_NUM 2 // Number of sample buffers - 2 enough for double buffering
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef struct
 {
-    i2s_chan_handle_t *p_i2s_handle;        //< Pointer to the I2S channel handle
-    size_t             sample_size;         //< Size of the sample buffer
-    int16_t           *sample_buffer;       //< Pointer to the sample buffer for storing microphone data
-    uint8_t            sample_buffer_index; //< Index for the sample buffer
+    i2s_chan_handle_t *p_i2s_handle;                     //< Pointer to the I2S channel handle
+    size_t             sample_size;                      //< Size of the sample buffer
+    int16_t           *sample_buffer[SAMPLE_BUFFER_NUM]; //< Pointer to the sample buffer for storing microphone data
+    uint8_t            sample_buffer_num;                //< Number of sample buffers
+    uint8_t            sample_buffer_index;              //< Index for the sample buffer
     size_t             bytes_read;
     TaskHandle_t       task_handle;
+#if ESP_MIC_TRANSFER_DATA_OVER_STREAM_BUFFER
+    StreamBufferHandle_t stream_buffer;
+#else
+#endif
 } esp_mic_handle_t;
 
 static inline void
