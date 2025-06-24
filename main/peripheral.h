@@ -23,19 +23,18 @@
 #endif
 
 #define CONFIG_I2S_SAMPLE_RATE_HZ 44100
-#define CONFIG_I2S_BIT_SAMPLE 16
-#define NUM_CHANNELS (1) // For mono recording only!
+#define CONFIG_I2S_BIT_SAMPLE     16
+#define NUM_CHANNELS              (1) // For mono recording only!
 
 #define SAMPLE_SIZE (CONFIG_I2S_BIT_SAMPLE * 1024)
-#define BYTE_RATE (CONFIG_I2S_SAMPLE_RATE_HZ * (CONFIG_I2S_BIT_SAMPLE / 8)) * NUM_CHANNELS
+#define BYTE_RATE   (CONFIG_I2S_SAMPLE_RATE_HZ * (CONFIG_I2S_BIT_SAMPLE / 8)) * NUM_CHANNELS
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
-    uint8_t peripheral_init(void);
-    i2s_chan_handle_t *peripheral_get_i2s_rx_handle(void);
+uint8_t            peripheral_init(void);
+i2s_chan_handle_t *peripheral_get_i2s_rx_handle(void);
 
 #ifdef __cplusplus
 }

@@ -14,23 +14,26 @@
 #include <stddef.h>
 #include "peripheral.h"
 
-static i2s_chan_handle_t rx_handle;
+static i2s_chan_handle_t rx_handle = NULL;
 
 static void peripheral_i2s_init(void);
 
-uint8_t peripheral_init(void)
+uint8_t
+peripheral_init(void)
 {
     peripheral_i2s_init();
 
     return 0; // Return 0 on success
 }
 
-i2s_chan_handle_t *peripheral_get_i2s_rx_handle(void)
+i2s_chan_handle_t *
+peripheral_get_i2s_rx_handle(void)
 {
     return &rx_handle;
 }
 
-static void peripheral_i2s_init(void)
+static void
+peripheral_i2s_init(void)
 {
 #if CONFIG_MIC_SPH0645LM4H
 #elif CONFIG_MIC_ATSAMD21
@@ -51,5 +54,7 @@ static void peripheral_i2s_init(void)
     };
     ESP_ERROR_CHECK(i2s_channel_init_pdm_rx_mode(rx_handle, &pdm_rx_cfg));
     ESP_ERROR_CHECK(i2s_channel_enable(rx_handle));
+
+    printf("##### %p\n", &rx_handle);
 #endif
 }
