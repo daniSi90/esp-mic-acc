@@ -62,6 +62,7 @@ esp_mic_start(esp_mic_handle_t *p_mic_handle)
         ESP_LOGE(TAG, "Sample size is zero");
         return -1;
     }
+
     const size_t SAMPLE_BUFFER_SIZE = p_mic_handle->sample_size * sizeof(int16_t);
     for (uint8_t i = 0; i < SAMPLE_BUFFER_NUM; i++)
     {
@@ -72,6 +73,8 @@ esp_mic_start(esp_mic_handle_t *p_mic_handle)
             return -1;
         }
     }
+
+    /// Optional data transfer method stream buffer/double buffer
 #if ESP_MIC_TRANSFER_DATA_OVER_STREAM_BUFFER
     p_mic_handle->stream_buffer = xStreamBufferCreate(SAMPLE_BUFFER_SIZE, SAMPLE_BUFFER_SIZE);
     if (p_mic_handle->stream_buffer == NULL)
@@ -79,7 +82,15 @@ esp_mic_start(esp_mic_handle_t *p_mic_handle)
         ESP_LOGE(TAG, "Failed to create stream buffer");
         return -1;
     }
+#elif ESP_MIC_TRANSFER_DATA_OVER_DOUBLE_BUFFER
+    p_mic_handle->double_buffer_queue = xQueueCreate(1, sizeof(esp_mic_rx_data_t));
+    if (p_mic_handle->double_buffer_queue == NULL)
+    {
+        ESP_LOGE(TAG, "Failed to create double buffer queue");
+        return -1;
+    }
 #endif
+
     xTaskCreate(esp_mic_task, "mic", MIC_TASK_STACK_SIZE, p_mic_handle, tskIDLE_PRIORITY + 2, &p_mic_handle->task_handle);
     if (p_mic_handle->task_handle == NULL)
     {
@@ -90,17 +101,28 @@ esp_mic_start(esp_mic_handle_t *p_mic_handle)
     return 0; // Return 0 on success
 }
 
+#if ESP_MIC_TRANSFER_DATA_OVER_DOUBLE_BUFFER
+void
+esp_mic_poll_data(esp_mic_handle_t *p_mic_handle, esp_mic_rx_data_t *p_data)
+{
+    if (xQueueReceive(p_mic_handle->double_buffer_queue, p_data, portMAX_DELAY) != pdTRUE)
+    {
+        ESP_LOGE(TAG, "Failed to receive data from double buffer queue");
+        return;
+    }
+}
+#endif
+
 static void
 esp_mic_task(void *arg)
 {
     esp_mic_handle_t *p_mic_handle = (esp_mic_handle_t *)arg;
-    ESP_LOGI(TAG, "I2S handle: %p", p_mic_handle->p_i2s_handle);
-    vTaskDelay(pdMS_TO_TICKS(1000)); // Wait for I2S to be ready
+    esp_mic_rx_data_t esp_mic_data;
+
     while (1)
     {
         if (i2s_channel_read(*p_mic_handle->p_i2s_handle, p_mic_handle->sample_buffer[p_mic_handle->sample_buffer_index], p_mic_handle->sample_size, &p_mic_handle->bytes_read, MIC_READ_TIMEOUT_TICKS) == ESP_OK)
         {
-            ESP_LOGI(TAG, "Read %zu bytes from microphone", p_mic_handle->bytes_read);
 #if ESP_MIC_TRANSFER_DATA_OVER_STREAM_BUFFER
             // clang-format off
             xStreamBufferSend(p_mic_handle->stream_buffer, \
@@ -109,10 +131,12 @@ esp_mic_task(void *arg)
                               portMAX_DELAY);
             // clang-format on
 #elif ESP_MIC_TRANSFER_DATA_OVER_DOUBLE_BUFFER
-            if (++p_mic_handle->sample_buffer_index >= SAMPLE_BUFFER_NUM)
-            {
-                p_mic_handle->sample_buffer_index = 0; // Reset the index if it exceeds the number of buffers
-            }
+            esp_mic_data.p_buffer = p_mic_handle->sample_buffer[p_mic_handle->sample_buffer_index];
+            esp_mic_data.size     = p_mic_handle->bytes_read;
+            esp_mic_data.index    = p_mic_handle->sample_buffer_index;
+            xQueueOverwrite(p_mic_handle->double_buffer_queue, &esp_mic_data);
+
+            p_mic_handle->sample_buffer_index = !p_mic_handle->sample_buffer_index; // Toggle the index for double buffering
 #endif
         }
     }
