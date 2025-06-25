@@ -7,9 +7,11 @@
 #include <stdio.h>
 #include "peripheral.h"
 #include "esp_microphone.h"
+#include "udp_handler.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
+
 
 static const char *TAG = "main";
 
@@ -18,6 +20,8 @@ app_main(void)
 {
     ESP_LOGI(TAG, "Init peripheral");
     peripheral_init();
+
+    udp_handler_init();
 
     i2s_chan_handle_t *p_i2s_rx_handle  = peripheral_get_i2s_rx_handle();
     esp_mic_handle_t  *p_esp_mic_handle = esp_mic_create();
