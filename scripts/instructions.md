@@ -56,8 +56,12 @@ This Python script parses UDP packets containing sine wave data from a log file 
 pip install -r requirements.txt
 ```
 
-Then run: 
+Then run the `audio_visualize.py`, if you want to see the analyzed images of the json file: 
 ```bash
-./log_parser.py
+./audio_visualize.py
 ```
-This uses the `udp_packets.log` file to generate the image graph, together with the `.csv` files.
+
+Then run the json to wav script to generate a wav file: 
+```bash
+./json_to_wav.py udp_packets.json output.wav
+```
