@@ -8,6 +8,7 @@
 #include "peripheral.h"
 #include "esp_microphone.h"
 #include "udp_handler.h"
+#include <math.h>
 
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"

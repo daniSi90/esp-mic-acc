@@ -232,7 +232,8 @@ udp_send_audio(const int16_t *audio_data, size_t samples_count)
         }
 
         // Send packet
-        int err = sendto(udp_socket, &packet, sizeof(packet), 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
+        size_t packet_size = sizeof(packet.sequence_num) + sizeof(packet.timestamp) + samples_to_send * sizeof(int16_t);
+        int    err         = sendto(udp_socket, &packet, packet_size, 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
 
         if (err < 0)
         {
