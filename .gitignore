@@ -11,3 +11,5 @@ scripts/*.
 .vscode/settings.json
 .clangd
 *.tcl
+.cache
+*.wav
