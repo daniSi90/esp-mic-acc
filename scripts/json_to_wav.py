@@ -27,10 +27,10 @@ def process_packet(byte_data):
     samples = np.frombuffer(audio_data, dtype='<i2').astype(np.float32)
     
     # 1. Initial clipping protection
-    samples = np.clip(samples, -32767, 32767)
+    #samples = np.clip(samples, -32767, 32767)
     
     # 2. Bandpass filter (300Hz-8kHz) to remove extreme low/high frequencies
-    samples = bandpass_filter(samples, 300, 8000, 44100, order=4)
+    #samples = bandpass_filter(samples, 300, 8000, 44100, order=4)
     
     # 3. Adaptive buzzing detection
     median = np.median(samples)
@@ -40,7 +40,7 @@ def process_packet(byte_data):
     # 4. Selective median filtering only on buzzing samples
     if np.any(buzzing_mask):
         filtered = medfilt(samples, kernel_size=5)
-        samples[buzzing_mask] = filtered[buzzing_mask]
+        #samples[buzzing_mask] = filtered[buzzing_mask]
     
     return seq_num, samples.astype(np.int16)
 
@@ -108,7 +108,7 @@ def json_to_wav(json_file, output_wav, sample_rate=44100):
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print("Usage: ./enhanced_audio.py input.json output.wav")
+        print("Usage: ./json_to_wav.py input.json output.wav")
         sys.exit(1)
     
     json_to_wav(sys.argv[1], sys.argv[2])
